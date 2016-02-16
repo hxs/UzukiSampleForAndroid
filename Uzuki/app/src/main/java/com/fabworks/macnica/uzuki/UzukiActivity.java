@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fabworks.macnica.uzuki.shield.Uzuki;
+import com.fabworks.macnica.uzuki.sensor.Adxl345;
 import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiListener;
 import com.uxxu.konashi.lib.KonashiManager;
@@ -88,7 +88,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DonePipe<BluetoothGattCharacteristic, byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(BluetoothGattCharacteristic result) {
-                        return Uzuki.readAccelerometer(mKonashiManager);
+                        return Adxl345.readAccelerometer(mKonashiManager);
                     }
                 })
                 .then(new DoneCallback<byte[]>() {
@@ -140,7 +140,19 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         @Override
         public void onConnect(KonashiManager manager) {
             refreshViews();
-            mKonashiManager.i2cMode(Konashi.I2C_ENABLE_100K);
+            mKonashiManager.i2cMode(Konashi.I2C_ENABLE_100K)
+                    .then(new DonePipe<BluetoothGattCharacteristic, BluetoothGattCharacteristic, BletiaException, Void>() {
+                        @Override
+                        public Promise<BluetoothGattCharacteristic, BletiaException, Void> pipeDone(BluetoothGattCharacteristic result) {
+                            return Adxl345.initialize(mKonashiManager);
+                        }
+                    })
+                    .fail(new FailCallback<BletiaException>() {
+                        @Override
+                        public void onFail(BletiaException result) {
+                            Toast.makeText(self, result.toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
         }
 
         @Override
