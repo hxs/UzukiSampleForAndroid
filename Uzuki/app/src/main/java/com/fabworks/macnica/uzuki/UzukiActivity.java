@@ -8,19 +8,20 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fabworks.macnica.uzuki.shield.Uzuki;
 import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiListener;
 import com.uxxu.konashi.lib.KonashiManager;
 
 import org.jdeferred.DoneCallback;
+import org.jdeferred.DonePipe;
 import org.jdeferred.FailCallback;
+import org.jdeferred.Promise;
 
 import info.izumin.android.bletia.BletiaException;
 
 public class UzukiActivity extends AppCompatActivity implements View.OnClickListener {
     private final UzukiActivity self = this;
-
-    public static final int ACC_SENSOR_ADDRESS = 0x1D;
 
     private KonashiManager mKonashiManager;
 
@@ -81,31 +82,15 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         mResultText.setVisibility(isReady ? View.VISIBLE : View.GONE);
     }
 
-    private void readData() {
-
-        byte[] data1 = {0x31, 0x0B};
-        byte[] data2 = {0x2D, 0x08};
-        byte[] data3 = {0x24, 0x20};
-        byte[] data4 = {0x27, (byte)0xF0};
-        byte[] data5 = {0x32};
+    private void readUzuki() {
 
         mKonashiManager.i2cStartCondition()
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data1.length, data1, (byte) ACC_SENSOR_ADDRESS))
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data2.length, data2, (byte) ACC_SENSOR_ADDRESS))
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data3.length, data3, (byte) ACC_SENSOR_ADDRESS))
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data4.length, data4, (byte) ACC_SENSOR_ADDRESS))
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data5.length, data5, (byte) ACC_SENSOR_ADDRESS))
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cReadPipe(6, (byte) ACC_SENSOR_ADDRESS))
+                .then(new DonePipe<BluetoothGattCharacteristic, byte[], BletiaException, Void>() {
+                    @Override
+                    public Promise<byte[], BletiaException, Void> pipeDone(BluetoothGattCharacteristic result) {
+                        return Uzuki.readAccelerometer(mKonashiManager);
+                    }
+                })
                 .then(new DoneCallback<byte[]>() {
                     @Override
                     public void onDone(byte[] result) {
@@ -135,7 +120,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     mHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            readData();
+                            readUzuki();
                             mHandler.postDelayed(this, 1000);
                         }
                     }, 1000);
