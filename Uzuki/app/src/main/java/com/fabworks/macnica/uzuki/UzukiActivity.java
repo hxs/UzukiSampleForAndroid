@@ -17,7 +17,7 @@ import org.jdeferred.FailCallback;
 
 import info.izumin.android.bletia.BletiaException;
 
-public class UzukiActivity extends AppCompatActivity {
+public class UzukiActivity extends AppCompatActivity implements View.OnClickListener {
     private final UzukiActivity self = this;
 
     private KonashiManager mKonashiManager;
