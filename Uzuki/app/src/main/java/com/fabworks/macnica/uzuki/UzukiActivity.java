@@ -20,6 +20,8 @@ import info.izumin.android.bletia.BletiaException;
 public class UzukiActivity extends AppCompatActivity implements View.OnClickListener {
     private final UzukiActivity self = this;
 
+    public static final int ACC_SENSOR_ADDRESS = 0x1D;
+
     private KonashiManager mKonashiManager;
 
     private TextView mResultText;
@@ -88,22 +90,22 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         byte[] data5 = {0x32};
 
         mKonashiManager.i2cStartCondition()
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data1.length, data1, (byte) Adxl345.ACC_SENSOR_ADDRESS))
+                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data1.length, data1, (byte) ACC_SENSOR_ADDRESS))
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data2.length, data2, (byte) Adxl345.ACC_SENSOR_ADDRESS))
+                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data2.length, data2, (byte) ACC_SENSOR_ADDRESS))
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data3.length, data3, (byte) Adxl345.ACC_SENSOR_ADDRESS))
+                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data3.length, data3, (byte) ACC_SENSOR_ADDRESS))
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data4.length, data4, (byte) Adxl345.ACC_SENSOR_ADDRESS))
+                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data4.length, data4, (byte) ACC_SENSOR_ADDRESS))
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data5.length, data5, (byte) Adxl345.ACC_SENSOR_ADDRESS))
+                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cWritePipe(data5.length, data5, (byte) ACC_SENSOR_ADDRESS))
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
                 .then(mKonashiManager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cReadPipe(6, (byte) Adxl345.ACC_SENSOR_ADDRESS))
+                .then(mKonashiManager.<BluetoothGattCharacteristic>i2cReadPipe(6, (byte) ACC_SENSOR_ADDRESS))
                 .then(new DoneCallback<byte[]>() {
                     @Override
                     public void onDone(byte[] result) {
