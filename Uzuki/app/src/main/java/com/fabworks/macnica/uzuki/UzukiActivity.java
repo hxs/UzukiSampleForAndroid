@@ -14,9 +14,7 @@ import com.uxxu.konashi.lib.KonashiListener;
 import com.uxxu.konashi.lib.KonashiManager;
 
 import org.jdeferred.DoneCallback;
-import org.jdeferred.DonePipe;
 import org.jdeferred.FailCallback;
-import org.jdeferred.Promise;
 
 import info.izumin.android.bletia.BletiaException;
 
@@ -61,6 +59,9 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void run() {
                 if(mKonashiManager.isConnected()){
+                    if(posting) {
+                        mHandler.removeCallbacksAndMessages(null);
+                    }
                     mKonashiManager.reset()
                             .then(new DoneCallback<BluetoothGattCharacteristic>() {
                                 @Override
@@ -83,20 +84,13 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void readUzuki() {
-
-        mKonashiManager.i2cStartCondition()
-                .then(new DonePipe<BluetoothGattCharacteristic, byte[], BletiaException, Void>() {
-                    @Override
-                    public Promise<byte[], BletiaException, Void> pipeDone(BluetoothGattCharacteristic result) {
-                        return Adxl345.readAccelerometer(mKonashiManager);
-                    }
-                })
+        Adxl345.<BluetoothGattCharacteristic>readAccelerometer(mKonashiManager)
                 .then(new DoneCallback<byte[]>() {
                     @Override
                     public void onDone(byte[] result) {
-                        double x = (double) ((((int) result[1]) << 8) | result[0]) / 256.0;
-                        double y = (double) ((((int) result[3]) << 8) | result[2]) / 256.0;
-                        double z = (double) ((((int) result[5]) << 8) | result[4]) / 256.0;
+                        int x = (result[1] << 8 | result[0]) >> 4;
+                        int y = (result[3] << 8 | result[2]) >> 4;
+                        int z = (result[5] << 8 | result[4]) >> 4;
                         mResultText.setText("x:" + x + " y:" + y + " z:" + z);
                         mKonashiManager.i2cStopCondition();
                     }
@@ -131,6 +125,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
             case R.id.btn_stop:
                 if(posting) {
                     mHandler.removeCallbacksAndMessages(null);
+                    posting = false;
                 }
                 break;
         }
@@ -141,12 +136,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         public void onConnect(KonashiManager manager) {
             refreshViews();
             mKonashiManager.i2cMode(Konashi.I2C_ENABLE_100K)
-                    .then(new DonePipe<BluetoothGattCharacteristic, BluetoothGattCharacteristic, BletiaException, Void>() {
-                        @Override
-                        public Promise<BluetoothGattCharacteristic, BletiaException, Void> pipeDone(BluetoothGattCharacteristic result) {
-                            return Adxl345.initialize(mKonashiManager);
-                        }
-                    })
+                    .then(Adxl345.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .fail(new FailCallback<BletiaException>() {
                         @Override
                         public void onFail(BletiaException result) {
