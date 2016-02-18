@@ -28,6 +28,9 @@ public class Adxl345 {
                 byte[] data3 = {0x24, 0x20};
                 byte[] data4 = {0x27, (byte)0xF0};
 
+                /**
+                 * TODO: Stop→StartとRestartで結果が変わる
+                 */
                 return manager.<BluetoothGattCharacteristic>i2cStartCondition()
                         .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data1.length, data1, (byte) ACC_SENSOR_ADDRESS))
                         .then(manager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
