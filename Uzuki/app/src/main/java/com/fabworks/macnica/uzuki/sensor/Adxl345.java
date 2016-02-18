@@ -2,7 +2,6 @@ package com.fabworks.macnica.uzuki.sensor;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiManager;
 
 import org.jdeferred.Promise;
@@ -24,8 +23,7 @@ public class Adxl345 {
         byte[] data3 = {0x24, 0x20};
         byte[] data4 = {0x27, (byte)0xF0};
 
-        return manager.<BluetoothGattCharacteristic>i2cMode(Konashi.I2C_ENABLE_100K)
-                .then(manager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
+        return manager.<BluetoothGattCharacteristic>i2cStartCondition()
                 .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data1.length, data1, (byte) ACC_SENSOR_ADDRESS))
                 .then(manager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
                 .then(manager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
