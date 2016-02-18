@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fabworks.macnica.uzuki.sensor.Adxl345;
+import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiListener;
 import com.uxxu.konashi.lib.KonashiManager;
 
@@ -83,14 +84,15 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void readUzuki() {
-        Adxl345.readAccelerometer(mKonashiManager)
+        Adxl345.<BluetoothGattCharacteristic>readAccelerometer(mKonashiManager)
                 .then(new DoneCallback<byte[]>() {
                     @Override
                     public void onDone(byte[] result) {
-                        double x = (double) ((((int) result[1]) << 8) | result[0]) / 256.0;
-                        double y = (double) ((((int) result[3]) << 8) | result[2]) / 256.0;
-                        double z = (double) ((((int) result[5]) << 8) | result[4]) / 256.0;
+                        int x = (result[1] << 8 | result[0]) >> 4;
+                        int y = (result[3] << 8 | result[2]) >> 4;
+                        int z = (result[5] << 8 | result[4]) >> 4;
                         mResultText.setText("x:" + x + " y:" + y + " z:" + z);
+                        mKonashiManager.i2cStopCondition();
                     }
                 })
                 .fail(new FailCallback<BletiaException>() {
@@ -133,13 +135,14 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         @Override
         public void onConnect(KonashiManager manager) {
             refreshViews();
-            Adxl345.initialize(mKonashiManager)
+            mKonashiManager.i2cMode(Konashi.I2C_ENABLE_100K)
+                    .then(Adxl345.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .fail(new FailCallback<BletiaException>() {
                         @Override
                         public void onFail(BletiaException result) {
                             Toast.makeText(self, result.toString(), Toast.LENGTH_SHORT).show();
                         }
-            });
+                    });
         }
 
         @Override
