@@ -9,12 +9,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fabworks.macnica.uzuki.sensor.Adxl345;
+import com.fabworks.macnica.uzuki.sensor.Si1145;
 import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiListener;
 import com.uxxu.konashi.lib.KonashiManager;
 
 import org.jdeferred.DoneCallback;
+import org.jdeferred.DonePipe;
 import org.jdeferred.FailCallback;
+import org.jdeferred.Promise;
 
 import info.izumin.android.bletia.BletiaException;
 
@@ -23,7 +26,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
 
     private KonashiManager mKonashiManager;
 
-    private TextView mResultText;
+    private TextView mXText, mYText, mZText, mAmbilentLightText, mProximityText;
 
     private Handler mHandler = new Handler();
     private boolean posting;
@@ -35,7 +38,12 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
         findViewById(R.id.btn_find).setOnClickListener(this);
-        mResultText = (TextView) findViewById(R.id.text_read);
+        mXText = (TextView)findViewById(R.id.read_x);
+        mYText = (TextView)findViewById(R.id.read_y);
+        mZText = (TextView)findViewById(R.id.read_z);
+        mAmbilentLightText = (TextView)findViewById(R.id.read_ambient_light);
+        mProximityText = (TextView)findViewById(R.id.read_proximity);
+
 
         mKonashiManager = new KonashiManager(getApplicationContext());
     }
@@ -80,18 +88,42 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         findViewById(R.id.btn_find).setVisibility(!isReady ? View.VISIBLE : View.GONE);
         findViewById(R.id.btn_start).setVisibility(isReady ? View.VISIBLE : View.GONE);
         findViewById(R.id.btn_stop).setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mResultText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mXText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mYText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mZText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mAmbilentLightText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mProximityText.setVisibility(isReady ? View.VISIBLE : View.GONE);
     }
 
     private void readUzuki() {
         Adxl345.<BluetoothGattCharacteristic>readAccelerometer(mKonashiManager)
-                .then(new DoneCallback<byte[]>() {
+                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
-                    public void onDone(byte[] result) {
+                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
                         int x = (result[1] << 8 | result[0]) >> 4;
                         int y = (result[3] << 8 | result[2]) >> 4;
                         int z = (result[5] << 8 | result[4]) >> 4;
-                        mResultText.setText("x:" + x + " y:" + y + " z:" + z);
+                        mXText.setText(getString(R.string.label_x) + x);
+                        mYText.setText(getString(R.string.label_y) + y);
+                        mZText.setText(getString(R.string.label_z) + z);
+                        mKonashiManager.i2cStopCondition();
+                        return Si1145.readAmbientLight(mKonashiManager);
+                    }
+                })
+                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+                    @Override
+                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+                        int value = (result[1] << 8 | result[0]);
+                        mAmbilentLightText.setText(getString(R.string.label_ambient_light) + value);
+                        mKonashiManager.i2cStopCondition();
+                        return Si1145.readProximity(mKonashiManager);
+                    }
+                })
+                .then(new DoneCallback<byte[]>() {
+                    @Override
+                    public void onDone(byte[] result) {
+                        int value = (result[1] << 8 | result[0]);
+                        mProximityText.setText(getString(R.string.label_proximity) + value);
                         mKonashiManager.i2cStopCondition();
                     }
                 })
@@ -137,6 +169,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
             refreshViews();
             mKonashiManager.i2cMode(Konashi.I2C_ENABLE_100K)
                     .then(Adxl345.<BluetoothGattCharacteristic>initialize(mKonashiManager))
+                    .then(Si1145.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .fail(new FailCallback<BletiaException>() {
                         @Override
                         public void onFail(BletiaException result) {
