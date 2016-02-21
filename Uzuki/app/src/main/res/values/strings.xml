@@ -10,5 +10,7 @@
     <string name="label_z">z:</string>
     <string name="label_ambient_light">Ambient Light:</string>
     <string name="label_proximity">Proximity:</string>
+    <string name="label_humid">Humid:</string>
+    <string name="label_temperature">Temperature:</string>
 
 </resources>
