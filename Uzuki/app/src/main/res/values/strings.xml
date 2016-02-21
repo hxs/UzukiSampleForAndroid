@@ -3,6 +3,12 @@
 
     <string name="btn_start">Start</string>
     <string name="btn_stop">Stop</string>
-    <string name="label_read">Read value</string>
     <string name="btn_find">konashiをさがす</string>
+
+    <string name="label_x">x:</string>
+    <string name="label_y">y:</string>
+    <string name="label_z">z:</string>
+    <string name="label_ambient_light">Ambient Light:</string>
+    <string name="label_proximity">Proximity:</string>
+
 </resources>

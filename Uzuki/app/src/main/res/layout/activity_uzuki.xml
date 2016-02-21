@@ -14,8 +14,8 @@
         android:id="@+id/btn_start"
         android:text="@string/btn_start"
         android:visibility="visible"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -24,20 +24,18 @@
         android:id="@+id/btn_stop"
         android:visibility="visible"
         android:gravity="center"
-        android:layout_alignTop="@+id/btn_start"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"/>
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/btn_start"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/label_read"
-        android:id="@+id/text_read"
+        android:text="@string/label_x"
+        android:id="@+id/read_x"
         android:visibility="visible"
-        android:gravity="center"
-        android:layout_alignTop="@+id/btn_stop"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"/>
+        android:gravity="start"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -46,5 +44,45 @@
         android:id="@+id/btn_find"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_y"
+        android:id="@+id/read_y"
+        android:visibility="visible"
+        android:gravity="start"
+        android:layout_below="@+id/read_x"
+        android:layout_alignParentStart="true"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_z"
+        android:id="@+id/read_z"
+        android:visibility="visible"
+        android:gravity="start"
+        android:layout_below="@+id/read_y"
+        android:layout_alignParentStart="true"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_ambient_light"
+        android:id="@+id/read_ambient_light"
+        android:visibility="visible"
+        android:gravity="start"
+        android:layout_below="@+id/read_z"
+        android:layout_alignParentStart="true"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_proximity"
+        android:id="@+id/read_proximity"
+        android:visibility="visible"
+        android:gravity="start"
+        android:layout_below="@+id/read_ambient_light"
+        android:layout_alignParentStart="true"/>
 
 </RelativeLayout>
