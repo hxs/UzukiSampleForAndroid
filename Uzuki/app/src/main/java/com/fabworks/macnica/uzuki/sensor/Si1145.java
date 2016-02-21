@@ -22,13 +22,13 @@ public class Si1145 {
         return new DonePipe<D, BluetoothGattCharacteristic, BletiaException, Void>() {
             @Override
             public Promise<BluetoothGattCharacteristic, BletiaException, Void> pipeDone(D result) {
-                byte[] data1 = {0x07, 0x17}; //
-                byte[] data2 = {0x13, 0x00};
-                byte[] data3 = {0x14, 0x02};
-                byte[] data4 = {0x15, (byte)0x89};
-                byte[] data5 = {0x16, 0x29};
-                byte[] data6 = {0x17, (byte)(0x80 | 0x20 | 0x10 | 0x01)};
-                byte[] data7 = {0x18, (byte)(0xA0 | 0x01)};
+                byte[] data1 = {0x07, 0x17};
+                byte[] data2 = {0x0f, 0x0f};
+                byte[] data3 = {0x09, (byte)0xfa};
+                byte[] data4 = {0x17, (byte)0xb1};
+                byte[] data5 = {0x18, (byte)0xa1};
+                byte[] data6 = {0x13, 0x7b, 0x6b, 0x01, 0x00};
+                byte[] data7 = {0x18, 0x0f};
 
                 return manager.<BluetoothGattCharacteristic>i2cStartCondition()
                         .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data1.length, data1, (byte) PROX_LIGHT_UV_SENSOR_ADDRESS))
