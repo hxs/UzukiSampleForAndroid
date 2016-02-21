@@ -26,7 +26,13 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
 
     private KonashiManager mKonashiManager;
 
-    private TextView mXText, mYText, mZText, mAmbilentLightText, mProximityText;
+    private TextView mXText;
+    private TextView mYText;
+    private TextView mZText;
+    private TextView mAmbientLightText;
+    private TextView mProximityText;
+    private TextView mHumidText;
+    private TextView mTemperatureText;
 
     private Handler mHandler = new Handler();
     private boolean posting;
@@ -41,9 +47,10 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         mXText = (TextView)findViewById(R.id.read_x);
         mYText = (TextView)findViewById(R.id.read_y);
         mZText = (TextView)findViewById(R.id.read_z);
-        mAmbilentLightText = (TextView)findViewById(R.id.read_ambient_light);
+        mAmbientLightText = (TextView)findViewById(R.id.read_ambient_light);
         mProximityText = (TextView)findViewById(R.id.read_proximity);
-
+        mHumidText = (TextView)findViewById(R.id.read_humid);
+        mTemperatureText = (TextView)findViewById(R.id.read_temperature);
 
         mKonashiManager = new KonashiManager(getApplicationContext());
     }
@@ -91,7 +98,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         mXText.setVisibility(isReady ? View.VISIBLE : View.GONE);
         mYText.setVisibility(isReady ? View.VISIBLE : View.GONE);
         mZText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mAmbilentLightText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mAmbientLightText.setVisibility(isReady ? View.VISIBLE : View.GONE);
         mProximityText.setVisibility(isReady ? View.VISIBLE : View.GONE);
     }
 
@@ -114,7 +121,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
                         int value = (result[1] << 8 | result[0]);
-                        mAmbilentLightText.setText(getString(R.string.label_ambient_light) + value);
+                        mAmbientLightText.setText(getString(R.string.label_ambient_light) + value);
                         mKonashiManager.i2cStopCondition();
                         return Si1145.readProximity(mKonashiManager);
                     }
