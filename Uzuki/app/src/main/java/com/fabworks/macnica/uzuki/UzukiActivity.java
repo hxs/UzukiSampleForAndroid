@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.fabworks.macnica.uzuki.sensor.Adxl345;
 import com.fabworks.macnica.uzuki.sensor.Si1145;
+import com.fabworks.macnica.uzuki.sensor.Si7013;
 import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiListener;
 import com.uxxu.konashi.lib.KonashiManager;
@@ -100,6 +101,8 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         mZText.setVisibility(isReady ? View.VISIBLE : View.GONE);
         mAmbientLightText.setVisibility(isReady ? View.VISIBLE : View.GONE);
         mProximityText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mHumidText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mTemperatureText.setVisibility(isReady ? View.VISIBLE : View.GONE);
     }
 
     private void readUzuki() {
@@ -126,11 +129,29 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                         return Si1145.readProximity(mKonashiManager);
                     }
                 })
+                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+                    @Override
+                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+                        int value = (result[1] << 8 | result[0]);
+                        mProximityText.setText(getString(R.string.label_proximity) + value);
+                        mKonashiManager.i2cStopCondition();
+                        return Si7013.readHumid(mKonashiManager);
+                    }
+                })
+                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+                    @Override
+                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+                        int value = (result[0] << 8 | result[1]);
+                        mHumidText.setText(getString(R.string.label_humid) + value);
+                        mKonashiManager.i2cStopCondition();
+                        return Si7013.readTemperature(mKonashiManager);
+                    }
+                })
                 .then(new DoneCallback<byte[]>() {
                     @Override
                     public void onDone(byte[] result) {
-                        int value = (result[1] << 8 | result[0]);
-                        mProximityText.setText(getString(R.string.label_proximity) + value);
+                        int value = (result[0] << 8 | result[1]);
+                        mTemperatureText.setText(getString(R.string.label_temperature) + value);
                         mKonashiManager.i2cStopCondition();
                     }
                 })
@@ -177,6 +198,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
             mKonashiManager.i2cMode(Konashi.I2C_ENABLE_100K)
                     .then(Adxl345.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .then(Si1145.<BluetoothGattCharacteristic>initialize(mKonashiManager))
+                    .then(Si7013.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .fail(new FailCallback<BletiaException>() {
                         @Override
                         public void onFail(BletiaException result) {
