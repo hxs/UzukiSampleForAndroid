@@ -12,8 +12,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".UzukiActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape">
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
