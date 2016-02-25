@@ -11,31 +11,12 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/btn_start"
-        android:text="@string/btn_start"
-        android:visibility="visible"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/btn_stop"
-        android:id="@+id/btn_stop"
+        android:text="@string/btn_disconnect"
+        android:id="@+id/btn_disconnect"
         android:visibility="visible"
         android:gravity="center"
         android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/btn_start"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_x"
-        android:id="@+id/read_x"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_centerHorizontal="true"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -48,12 +29,23 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="@string/label_x"
+        android:id="@+id/read_x"
+        android:visibility="visible"
+        android:gravity="center"
+        android:layout_marginTop="300dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text="@string/label_y"
         android:id="@+id/read_y"
         android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_x"
-        android:layout_alignParentStart="true"/>
+        android:gravity="center"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/read_x"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -61,48 +53,43 @@
         android:text="@string/label_z"
         android:id="@+id/read_z"
         android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_y"
-        android:layout_alignParentStart="true"/>
+        android:gravity="center"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/read_y"/>
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_ambient_light"
-        android:id="@+id/read_ambient_light"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_z"
-        android:layout_alignParentStart="true"/>
-
-    <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/label_proximity"
         android:id="@+id/read_proximity"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_ambient_light"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="80dp"/>
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_humid"
-        android:id="@+id/read_humid"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_proximity"
-        android:layout_alignParentStart="true"/>
-
-    <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/label_temperature"
         android:id="@+id/read_temperature"
-        android:visibility="visible"
-        android:gravity="start"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_humid"
+        android:id="@+id/read_humid"
+        android:layout_below="@+id/read_temperature"
+        android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_discomfort"
+        android:id="@+id/read_discomfort"
         android:layout_below="@+id/read_humid"
-        android:layout_alignParentStart="true"/>
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
