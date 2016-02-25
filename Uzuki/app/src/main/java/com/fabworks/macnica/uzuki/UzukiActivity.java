@@ -1,11 +1,14 @@
 package com.fabworks.macnica.uzuki;
 
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,12 +46,16 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
     TextView mZText;
     @Bind(R.id.read_proximity)
     TextView mProximityText;
+    @Bind(R.id.image_weather)
+    ImageView mWeatherImage;
     @Bind(R.id.read_humid)
     TextView mHumidText;
     @Bind(R.id.read_temperature)
     TextView mTemperatureText;
     @Bind(R.id.read_discomfort)
     TextView mDiscomfortText;
+    @Bind(R.id.label_discomfort)
+    TextView mDiscomfortLabel;
 
     private Handler mHandler = new Handler();
     private boolean posting;
@@ -91,18 +98,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if(mKonashiManager.isConnected()){
-                    if(posting) {
-                        mHandler.removeCallbacksAndMessages(null);
-                    }
-                    mKonashiManager.reset()
-                            .then(new DoneCallback<BluetoothGattCharacteristic>() {
-                                @Override
-                                public void onDone(BluetoothGattCharacteristic result) {
-                                    mKonashiManager.disconnect();
-                                }
-                            });
-                }
+                disconnectKonashi();
             }
         }).start();
         super.onDestroy();
@@ -112,9 +108,22 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         boolean isReady = mKonashiManager.isReady();
         mFindButton.setVisibility(!isReady ? View.VISIBLE : View.GONE);
         mDisconnectButton.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mXText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mYText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mZText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        findViewById(R.id.layout_sensor).setVisibility(isReady ? View.VISIBLE : View.GONE);
+    }
+
+    private void disconnectKonashi() {
+        if(mKonashiManager.isConnected()){
+            if(posting) {
+                mHandler.removeCallbacksAndMessages(null);
+            }
+            mKonashiManager.reset()
+                    .then(new DoneCallback<BluetoothGattCharacteristic>() {
+                        @Override
+                        public void onDone(BluetoothGattCharacteristic result) {
+                            mKonashiManager.disconnect();
+                        }
+                    });
+        }
     }
 
     private void readUzuki() {
@@ -125,9 +134,9 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                         double x = (double)((result[1] << 8 ^ result[0])) / 256.0;
                         double y = (double)((result[3] << 8 ^ result[2])) / 256.0;
                         double z = (double)((result[5] << 8 ^ result[4])) / 256.0;
-                        mXText.setText(getString(R.string.label_x) + x);
-                        mYText.setText(getString(R.string.label_y) + y);
-                        mZText.setText(getString(R.string.label_z) + z);
+                        mXText.setText(String.valueOf(x));
+                        mYText.setText(String.valueOf(y));
+                        mZText.setText(String.valueOf(z));
                         mKonashiManager.i2cStopCondition();
                         return Si1145.readAmbientLight(mKonashiManager);
                     }
@@ -136,16 +145,21 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
                         double value = (double)(result[1] << 8 | result[0]) / 100.0;
+                        int drawableId;
                         if(value < 4) {
                             //曇り
+                            drawableId = R.drawable.weather_cloudy;
                         } else if(value >= 4 || value < 10) {
                             //曇り・晴れ
+                            drawableId = R.drawable.weather_sunny_cloud;
                         } else if(value >= 10 || value < 30) {
                             //晴れ
+                            drawableId = R.drawable.weather_sunny;
                         } else {
                             //快晴
+                            drawableId = R.drawable.weather_heavy_sunny;
                         }
-                        //mAmbientLightText.setText(getString(R.string.label_ambient_light) + value);
+                        mWeatherImage.setImageDrawable(getDrawable(drawableId));
                         mKonashiManager.i2cStopCondition();
                         return Si1145.readProximity(mKonashiManager);
                     }
@@ -154,7 +168,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
                         double value = (double)(result[1] << 8 | result[0]);
-                        mProximityText.setText(getString(R.string.label_proximity) + value);
+                        mProximityText.setText(String.valueOf(value));
                         mKonashiManager.i2cStopCondition();
                         return Si7013.readHumid(mKonashiManager);
                     }
@@ -164,7 +178,8 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
                         double value = (double) (result[0] << 8 | result[1]) * 125.0 / 65536.0 - 6.0;
                         mRh = value;
-                        mHumidText.setText(value + getString(R.string.label_humid));
+                        String humidString = String.format("%.1f", value);
+                        mHumidText.setText(humidString);
                         mKonashiManager.i2cStopCondition();
                         return Si7013.readTemperature(mKonashiManager);
                     }
@@ -174,9 +189,10 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     public void onDone(byte[] result) {
                         double value = (double)(result[0] << 8 | result[1]) * 175.72 / 65536.0 - 46.85;
                         mTemp = value;
-                        double dcvalue = 0.81 * mTemp + 0.01 * mRh * (0.99 * mTemp - 14.3) + 46.3;
-                        mTemperatureText.setText(value + getString(R.string.label_temperature));
-                        mDiscomfortText.setText(getString(R.string.label_discomfort) + dcvalue);
+                        double dcValue = 0.81 * mTemp + 0.01 * mRh * (0.99 * mTemp - 14.3) + 46.3;
+                        String temperatureString = String.format("%.1f", value);
+                        mTemperatureText.setText(temperatureString);
+                        setDiscomfortText((int)dcValue);
                         mKonashiManager.i2cStopCondition();
                     }
                 })
@@ -188,11 +204,46 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 });
     }
 
+    public void setDiscomfortText(int value) {
+        int color;
+        if (value<55){ // 寒い
+            color = Color.CYAN;
+        }
+        else if(value>=55 && value<60){ // 肌寒い
+            color = Color.BLUE;
+        }
+        else if(value>=60 && value<65) { // 何も感じない
+            color = Color.GREEN;
+        }
+        else if (value>=65 && value<70) { // 快い
+            color = Color.GREEN;
+        }
+        else if (value>=70 && value<75) { // 暑くない
+            color = Color.YELLOW;
+        }
+        else if (value>=75 && value<80) { // やや暑い
+            color = ContextCompat.getColor(this, R.color.orange);
+        }
+        else if (value>=80 && value<85) { // 暑くて汗がでる
+            color = Color.RED;
+        }
+        else{ // 暑くてたまらない
+            color = ContextCompat.getColor(this, R.color.purple);
+        }
+        mDiscomfortLabel.setTextColor(color);
+        mDiscomfortText.setTextColor(color);
+        mDiscomfortText.setText(String.valueOf(value));
+
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_find:
                 mKonashiManager.find(this);
+                break;
+            case R.id.btn_disconnect:
+                disconnectKonashi();
                 break;
         }
     }
