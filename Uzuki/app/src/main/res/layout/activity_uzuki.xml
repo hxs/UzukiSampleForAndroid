@@ -6,36 +6,7 @@
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin"
                 android:paddingBottom="@dimen/activity_vertical_margin"
-                tools:context=".Uzuki">
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/btn_start"
-        android:text="@string/btn_start"
-        android:visibility="visible"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/btn_stop"
-        android:id="@+id/btn_stop"
-        android:visibility="visible"
-        android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/btn_start"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_x"
-        android:id="@+id/read_x"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"/>
+                tools:context=".UzukiActivity">
 
     <Button
         android:layout_width="wrap_content"
@@ -45,64 +16,93 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"/>
 
-    <TextView
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_y"
-        android:id="@+id/read_y"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_x"
-        android:layout_alignParentStart="true"/>
+        android:layout_height="match_parent"
+        android:id="@+id/layout_sensor">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_z"
-        android:id="@+id/read_z"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_y"
-        android:layout_alignParentStart="true"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_disconnect"
+            android:id="@+id/btn_disconnect"
+            android:gravity="center"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_ambient_light"
-        android:id="@+id/read_ambient_light"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_z"
-        android:layout_alignParentStart="true"/>
+        <ImageView
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:id="@+id/mpression_logo"
+            android:src="@drawable/mpression_logo"
+            android:layout_marginTop="-30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_proximity"
-        android:id="@+id/read_proximity"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_ambient_light"
-        android:layout_alignParentStart="true"/>
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/image_weather"
+            android:src="@drawable/weather_sunny"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="20dp"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_humid"
-        android:id="@+id/read_humid"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_proximity"
-        android:layout_alignParentStart="true"/>
+        <!-- 加速度 -->
+        <include layout="@layout/layout_acc"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_temperature"
-        android:id="@+id/read_temperature"
-        android:visibility="visible"
-        android:gravity="start"
-        android:layout_below="@+id/read_humid"
-        android:layout_alignParentStart="true"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_proximity"
+            android:textSize="20sp"
+            android:id="@+id/label_proximity"
+            android:layout_alignBottom="@+id/image_weather"
+            android:layout_toStartOf="@+id/read_proximity"
+            android:layout_marginEnd="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.0000000"
+            android:textSize="20sp"
+            android:id="@+id/read_proximity"
+            android:layout_alignTop="@+id/label_proximity"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="10dp"/>
+
+        <include layout="@layout/layout_temp_humid"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/layout_dc"
+            android:layout_marginTop="260dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_discomfort"
+                android:textSize="26sp"
+                android:id="@+id/label_discomfort"
+                android:layout_marginEnd="5dp"
+                android:visibility="visible"
+                android:layout_weight="1"
+                android:gravity="end"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100"
+                android:textSize="26sp"
+                android:id="@+id/read_discomfort"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:gravity="start"/>
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </RelativeLayout>

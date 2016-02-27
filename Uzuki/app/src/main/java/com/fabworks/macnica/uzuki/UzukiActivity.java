@@ -1,10 +1,14 @@
 package com.fabworks.macnica.uzuki;
 
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +24,8 @@ import org.jdeferred.DonePipe;
 import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import info.izumin.android.bletia.BletiaException;
 
 public class UzukiActivity extends AppCompatActivity implements View.OnClickListener {
@@ -27,31 +33,49 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
 
     private KonashiManager mKonashiManager;
 
-    private TextView mXText;
-    private TextView mYText;
-    private TextView mZText;
-    private TextView mAmbientLightText;
-    private TextView mProximityText;
-    private TextView mHumidText;
-    private TextView mTemperatureText;
+    @Bind(R.id.btn_find)
+    Button mFindButton;
+    @Bind(R.id.btn_disconnect)
+    Button mDisconnectButton;
+
+    @Bind(R.id.read_x)
+    TextView mXText;
+    @Bind(R.id.read_y)
+    TextView mYText;
+    @Bind(R.id.read_z)
+    TextView mZText;
+    @Bind(R.id.read_proximity)
+    TextView mProximityText;
+    @Bind(R.id.image_weather)
+    ImageView mWeatherImage;
+    @Bind(R.id.read_humid)
+    TextView mHumidText;
+    @Bind(R.id.read_temperature)
+    TextView mTemperatureText;
+    @Bind(R.id.read_discomfort)
+    TextView mDiscomfortText;
+    @Bind(R.id.label_discomfort)
+    TextView mDiscomfortLabel;
 
     private Handler mHandler = new Handler();
     private boolean posting;
+
+    private double mRh;
+    private double mTemp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_uzuki);
-        findViewById(R.id.btn_start).setOnClickListener(this);
-        findViewById(R.id.btn_stop).setOnClickListener(this);
-        findViewById(R.id.btn_find).setOnClickListener(this);
+
         mXText = (TextView)findViewById(R.id.read_x);
         mYText = (TextView)findViewById(R.id.read_y);
         mZText = (TextView)findViewById(R.id.read_z);
-        mAmbientLightText = (TextView)findViewById(R.id.read_ambient_light);
-        mProximityText = (TextView)findViewById(R.id.read_proximity);
-        mHumidText = (TextView)findViewById(R.id.read_humid);
-        mTemperatureText = (TextView)findViewById(R.id.read_temperature);
+
+        ButterKnife.bind(this);
+
+        mFindButton.setOnClickListener(this);
+        mDisconnectButton.setOnClickListener(this);
 
         mKonashiManager = new KonashiManager(getApplicationContext());
     }
@@ -74,18 +98,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if(mKonashiManager.isConnected()){
-                    if(posting) {
-                        mHandler.removeCallbacksAndMessages(null);
-                    }
-                    mKonashiManager.reset()
-                            .then(new DoneCallback<BluetoothGattCharacteristic>() {
-                                @Override
-                                public void onDone(BluetoothGattCharacteristic result) {
-                                    mKonashiManager.disconnect();
-                                }
-                            });
-                }
+                disconnectKonashi();
             }
         }).start();
         super.onDestroy();
@@ -93,16 +106,24 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
 
     private void refreshViews() {
         boolean isReady = mKonashiManager.isReady();
-        findViewById(R.id.btn_find).setVisibility(!isReady ? View.VISIBLE : View.GONE);
-        findViewById(R.id.btn_start).setVisibility(isReady ? View.VISIBLE : View.GONE);
-        findViewById(R.id.btn_stop).setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mXText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mYText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mZText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mAmbientLightText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mProximityText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mHumidText.setVisibility(isReady ? View.VISIBLE : View.GONE);
-        mTemperatureText.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        mFindButton.setVisibility(!isReady ? View.VISIBLE : View.GONE);
+        mDisconnectButton.setVisibility(isReady ? View.VISIBLE : View.GONE);
+        findViewById(R.id.layout_sensor).setVisibility(isReady ? View.VISIBLE : View.GONE);
+    }
+
+    private void disconnectKonashi() {
+        if(mKonashiManager.isConnected()){
+            if(posting) {
+                mHandler.removeCallbacksAndMessages(null);
+            }
+            mKonashiManager.reset()
+                    .then(new DoneCallback<BluetoothGattCharacteristic>() {
+                        @Override
+                        public void onDone(BluetoothGattCharacteristic result) {
+                            mKonashiManager.disconnect();
+                        }
+                    });
+        }
     }
 
     private void readUzuki() {
@@ -110,12 +131,12 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        int x = (result[1] << 8 | result[0]) >> 4;
-                        int y = (result[3] << 8 | result[2]) >> 4;
-                        int z = (result[5] << 8 | result[4]) >> 4;
-                        mXText.setText(getString(R.string.label_x) + x);
-                        mYText.setText(getString(R.string.label_y) + y);
-                        mZText.setText(getString(R.string.label_z) + z);
+                        double x = (double)((result[1] << 8 ^ result[0])) / 256.0;
+                        double y = (double)((result[3] << 8 ^ result[2])) / 256.0;
+                        double z = (double)((result[5] << 8 ^ result[4])) / 256.0;
+                        mXText.setText(String.valueOf(x));
+                        mYText.setText(String.valueOf(y));
+                        mZText.setText(String.valueOf(z));
                         mKonashiManager.i2cStopCondition();
                         return Si1145.readAmbientLight(mKonashiManager);
                     }
@@ -123,8 +144,22 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        int value = (result[1] << 8 | result[0]);
-                        mAmbientLightText.setText(getString(R.string.label_ambient_light) + value);
+                        double value = (double)(result[1] << 8 | result[0]) / 100.0;
+                        int drawableId;
+                        if(value < 4) {
+                            //曇り
+                            drawableId = R.drawable.weather_cloudy;
+                        } else if(value >= 4 || value < 10) {
+                            //曇り・晴れ
+                            drawableId = R.drawable.weather_sunny_cloud;
+                        } else if(value >= 10 || value < 30) {
+                            //晴れ
+                            drawableId = R.drawable.weather_sunny;
+                        } else {
+                            //快晴
+                            drawableId = R.drawable.weather_heavy_sunny;
+                        }
+                        mWeatherImage.setImageDrawable(getDrawable(drawableId));
                         mKonashiManager.i2cStopCondition();
                         return Si1145.readProximity(mKonashiManager);
                     }
@@ -132,8 +167,8 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        int value = (result[1] << 8 | result[0]);
-                        mProximityText.setText(getString(R.string.label_proximity) + value);
+                        double value = (double)(result[1] << 8 | result[0]);
+                        mProximityText.setText(String.valueOf(value));
                         mKonashiManager.i2cStopCondition();
                         return Si7013.readHumid(mKonashiManager);
                     }
@@ -141,8 +176,10 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        int value = (result[0] << 8 | result[1]);
-                        mHumidText.setText(getString(R.string.label_humid) + value);
+                        double value = (double) (result[0] << 8 | result[1]) * 125.0 / 65536.0 - 6.0;
+                        mRh = value;
+                        String humidString = String.format("%.1f", value);
+                        mHumidText.setText(humidString);
                         mKonashiManager.i2cStopCondition();
                         return Si7013.readTemperature(mKonashiManager);
                     }
@@ -150,8 +187,12 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DoneCallback<byte[]>() {
                     @Override
                     public void onDone(byte[] result) {
-                        int value = (result[0] << 8 | result[1]);
-                        mTemperatureText.setText(getString(R.string.label_temperature) + value);
+                        double value = (double)(result[0] << 8 | result[1]) * 175.72 / 65536.0 - 46.85;
+                        mTemp = value;
+                        double dcValue = 0.81 * mTemp + 0.01 * mRh * (0.99 * mTemp - 14.3) + 46.3;
+                        String temperatureString = String.format("%.1f", value);
+                        mTemperatureText.setText(temperatureString);
+                        setDiscomfortText((int)dcValue);
                         mKonashiManager.i2cStopCondition();
                     }
                 })
@@ -163,30 +204,46 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 });
     }
 
+    public void setDiscomfortText(int value) {
+        int color;
+        if (value<55){ // 寒い
+            color = Color.CYAN;
+        }
+        else if(value>=55 && value<60){ // 肌寒い
+            color = Color.BLUE;
+        }
+        else if(value>=60 && value<65) { // 何も感じない
+            color = Color.GREEN;
+        }
+        else if (value>=65 && value<70) { // 快い
+            color = Color.GREEN;
+        }
+        else if (value>=70 && value<75) { // 暑くない
+            color = Color.YELLOW;
+        }
+        else if (value>=75 && value<80) { // やや暑い
+            color = ContextCompat.getColor(this, R.color.orange);
+        }
+        else if (value>=80 && value<85) { // 暑くて汗がでる
+            color = Color.RED;
+        }
+        else{ // 暑くてたまらない
+            color = ContextCompat.getColor(this, R.color.purple);
+        }
+        mDiscomfortLabel.setTextColor(color);
+        mDiscomfortText.setTextColor(color);
+        mDiscomfortText.setText(String.valueOf(value));
+
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_find:
                 mKonashiManager.find(this);
                 break;
-            case R.id.btn_start:
-                if(!posting) {
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            readUzuki();
-                            mHandler.postDelayed(this, 1000);
-                        }
-                    }, 1000);
-                    posting = true;
-                }
-
-                break;
-            case R.id.btn_stop:
-                if(posting) {
-                    mHandler.removeCallbacksAndMessages(null);
-                    posting = false;
-                }
+            case R.id.btn_disconnect:
+                disconnectKonashi();
                 break;
         }
     }
@@ -199,6 +256,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     .then(Adxl345.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .then(Si1145.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .then(Si7013.<BluetoothGattCharacteristic>initialize(mKonashiManager))
+                    .then(mInitializeDoneCallback)
                     .fail(new FailCallback<BletiaException>() {
                         @Override
                         public void onFail(BletiaException result) {
@@ -235,6 +293,20 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         @Override
         public void onUpdateSpiMiso(KonashiManager manager, byte[] value) {
 
+        }
+    };
+
+    DoneCallback<BluetoothGattCharacteristic> mInitializeDoneCallback = new DoneCallback<BluetoothGattCharacteristic>() {
+        @Override
+        public void onDone(BluetoothGattCharacteristic result) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    readUzuki();
+                    mHandler.postDelayed(this, 1000);
+                }
+            }, 1000);
+            posting = true;
         }
     };
 }
