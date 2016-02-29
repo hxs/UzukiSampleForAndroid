@@ -127,21 +127,23 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void readUzuki() {
-//        Adxl345.<BluetoothGattCharacteristic>readAccelerometer(mKonashiManager)
-//                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
-//                    @Override
-//                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-//                        double x = (double)((result[1] << 8 ^ result[0])) / 256.0;
-//                        double y = (double)((result[3] << 8 ^ result[2])) / 256.0;
-//                        double z = (double)((result[5] << 8 ^ result[4])) / 256.0;
-//                        mXText.setText(String.valueOf(x));
-//                        mYText.setText(String.valueOf(y));
-//                        mZText.setText(String.valueOf(z));
-//                        mKonashiManager.i2cStopCondition();
-//                        return Si1145.readAmbientLight(mKonashiManager);
-//                    }
-//                })
-        Si1145.readAmbientLight(mKonashiManager)
+        Adxl345.<BluetoothGattCharacteristic>readAccelerometer(mKonashiManager)
+                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+                    @Override
+                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+                        double x = (double)((result[0] & 0xff) + (result[1] & 0xff) * 256) / 256.0;
+                        double y = (double)((result[2] & 0xff) + (result[3] & 0xff) * 256) / 256.0;
+                        double z = (double)((result[4] & 0xff) + (result[5] & 0xff) * 256) / 256.0;
+                        String xString = String.format("%.6f", x);
+                        String yString = String.format("%.6f", y);
+                        String zString = String.format("%.6f", z);
+                        mXText.setText(xString);
+                        mYText.setText(yString);
+                        mZText.setText(zString);
+                        mKonashiManager.i2cStopCondition();
+                        return Si1145.readAmbientLight(mKonashiManager);
+                    }
+                })
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
