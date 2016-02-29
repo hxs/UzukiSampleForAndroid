@@ -141,39 +141,41 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
 //                        return Si1145.readAmbientLight(mKonashiManager);
 //                    }
 //                })
-//                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
-//                    @Override
-//                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-//                        double value = (double)(result[1] << 8 | result[0]) / 100.0;
-//                        int drawableId;
-//                        if(value < 4) {
-//                            //曇り
-//                            drawableId = R.drawable.weather_cloudy;
-//                        } else if(value >= 4 || value < 10) {
-//                            //曇り・晴れ
-//                            drawableId = R.drawable.weather_sunny_cloud;
-//                        } else if(value >= 10 || value < 30) {
-//                            //晴れ
-//                            drawableId = R.drawable.weather_sunny;
-//                        } else {
-//                            //快晴
-//                            drawableId = R.drawable.weather_heavy_sunny;
-//                        }
-//                        mWeatherImage.setImageDrawable(getDrawable(drawableId));
-//                        mKonashiManager.i2cStopCondition();
-//                        return Si1145.readProximity(mKonashiManager);
-//                    }
-//                })
-//                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
-//                    @Override
-//                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-//                        double value = (double)(result[1] << 8 | result[0]);
-//                        mProximityText.setText(String.valueOf(value));
-//                        mKonashiManager.i2cStopCondition();
-//                        return Si7013.readHumid(mKonashiManager);
-//                    }
-//                })
-        Si7013.<BluetoothGattCharacteristic>readHumid(mKonashiManager)
+        Si1145.readAmbientLight(mKonashiManager)
+                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+                    @Override
+                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+                        double value = (double)((result[0] & 0xff) + (result[1] & 0xff) * 256) / 100.0;
+                        int drawableId;
+                        if(value < 4) {
+                            //曇り
+                            drawableId = R.drawable.weather_cloudy;
+                        } else if(value >= 4 || value < 10) {
+                            //曇り・晴れ
+                            drawableId = R.drawable.weather_sunny_cloud;
+                        } else if(value >= 10 || value < 30) {
+                            //晴れ
+                            drawableId = R.drawable.weather_sunny;
+                        } else {
+                            //快晴
+                            drawableId = R.drawable.weather_heavy_sunny;
+                        }
+                        mWeatherImage.setImageDrawable(ContextCompat.getDrawable(self, drawableId));
+                        mKonashiManager.i2cStopCondition();
+                        return Si1145.readProximity(mKonashiManager);
+                    }
+                })
+                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+                    @Override
+                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+                        double value = (double)((result[0] & 0xff) + (result[1] & 0xff) * 256);
+                        value = Math.log(value);
+                        String proximityString = String.format("%.6f", value);
+                        mProximityText.setText(proximityString);
+                        mKonashiManager.i2cStopCondition();
+                        return Si7013.readHumid(mKonashiManager);
+                    }
+                })
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
@@ -256,6 +258,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
             mKonashiManager.i2cMode(Konashi.I2C_ENABLE_100K)
                     .then(Adxl345.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .then(Si1145.<BluetoothGattCharacteristic>initialize(mKonashiManager))
+                    .then(Si1145.<BluetoothGattCharacteristic>setLed1Current(mKonashiManager))
 //                    .then(Si7013.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .then(mInitializeDoneCallback)
                     .fail(new FailCallback<BletiaException>() {

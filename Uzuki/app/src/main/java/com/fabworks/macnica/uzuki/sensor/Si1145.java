@@ -82,4 +82,25 @@ public class Si1145 {
                 .then(manager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
                 .then(manager.<BluetoothGattCharacteristic>i2cReadPipe(6, (byte) PROX_LIGHT_UV_SENSOR_ADDRESS));
     }
+
+    public static <D> DonePipe<D, BluetoothGattCharacteristic, BletiaException, Void> setLed1Current(final KonashiManager manager) {
+        return new DonePipe<D, BluetoothGattCharacteristic, BletiaException, Void>() {
+            @Override
+            public Promise<BluetoothGattCharacteristic, BletiaException, Void> pipeDone(D result) {
+                byte[] data1 = {0x17, 0x01};
+                byte[] data2 = {0x18, (byte)(0xA0 | 0x02)};
+                byte[] data3 = {0x0f, 0x02};
+
+                return manager.<BluetoothGattCharacteristic>i2cStartCondition()
+                        .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data1.length, data1, (byte) PROX_LIGHT_UV_SENSOR_ADDRESS))
+                        .then(manager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
+                        .then(manager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
+                        .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data2.length, data2, (byte) PROX_LIGHT_UV_SENSOR_ADDRESS))
+                        .then(manager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
+                        .then(manager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
+                        .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data3.length, data3, (byte) PROX_LIGHT_UV_SENSOR_ADDRESS))
+                        .then(manager.<BluetoothGattCharacteristic>i2cStopConditionPipe());
+            }
+        };
+    }
 }
