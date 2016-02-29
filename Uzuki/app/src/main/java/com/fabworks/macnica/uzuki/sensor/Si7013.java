@@ -2,6 +2,7 @@ package com.fabworks.macnica.uzuki.sensor;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
+import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiManager;
 
 import org.jdeferred.DonePipe;
@@ -32,7 +33,7 @@ public class Si7013 {
     }
 
     public static Promise<byte[], BletiaException, Void> readHumid(final KonashiManager manager) {
-        byte[] data = {(byte)0xe5};
+        byte[] data = {(byte)0xE5};
 
         return manager.<BluetoothGattCharacteristic>i2cStartCondition()
                 .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data.length, data, (byte) HUMID_TEMP_SENSOR_ADDRESS))
@@ -42,12 +43,16 @@ public class Si7013 {
     }
 
     public static Promise<byte[], BletiaException, Void> readTemperature(final KonashiManager manager) {
-        byte[] data = {(byte)0xe0};
+        byte[] data1 = {(byte)0xE0};
+        byte[] data2 = {(byte)0xE3};
 
         return manager.<BluetoothGattCharacteristic>i2cStartCondition()
-                .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data.length, data, (byte) HUMID_TEMP_SENSOR_ADDRESS))
+                .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data1.length, data1, (byte) HUMID_TEMP_SENSOR_ADDRESS))
                 .then(manager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
                 .then(manager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
-                .then(manager.<BluetoothGattCharacteristic>i2cReadPipe(2, (byte) HUMID_TEMP_SENSOR_ADDRESS));
+                .then(manager.<BluetoothGattCharacteristic>i2cWritePipe(data2.length, data2, (byte) HUMID_TEMP_SENSOR_ADDRESS))
+                .then(manager.<BluetoothGattCharacteristic>i2cStopConditionPipe())
+                .then(manager.<BluetoothGattCharacteristic>i2cStartConditionPipe())
+                .then(manager.<BluetoothGattCharacteristic>i2cReadPipe(Konashi.I2C_DATA_MAX_LENGTH, (byte) HUMID_TEMP_SENSOR_ADDRESS));
     }
 }
