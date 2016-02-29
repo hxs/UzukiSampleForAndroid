@@ -127,56 +127,57 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void readUzuki() {
-        Adxl345.<BluetoothGattCharacteristic>readAccelerometer(mKonashiManager)
+//        Adxl345.<BluetoothGattCharacteristic>readAccelerometer(mKonashiManager)
+//                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+//                    @Override
+//                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+//                        double x = (double)((result[1] << 8 ^ result[0])) / 256.0;
+//                        double y = (double)((result[3] << 8 ^ result[2])) / 256.0;
+//                        double z = (double)((result[5] << 8 ^ result[4])) / 256.0;
+//                        mXText.setText(String.valueOf(x));
+//                        mYText.setText(String.valueOf(y));
+//                        mZText.setText(String.valueOf(z));
+//                        mKonashiManager.i2cStopCondition();
+//                        return Si1145.readAmbientLight(mKonashiManager);
+//                    }
+//                })
+//                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+//                    @Override
+//                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+//                        double value = (double)(result[1] << 8 | result[0]) / 100.0;
+//                        int drawableId;
+//                        if(value < 4) {
+//                            //曇り
+//                            drawableId = R.drawable.weather_cloudy;
+//                        } else if(value >= 4 || value < 10) {
+//                            //曇り・晴れ
+//                            drawableId = R.drawable.weather_sunny_cloud;
+//                        } else if(value >= 10 || value < 30) {
+//                            //晴れ
+//                            drawableId = R.drawable.weather_sunny;
+//                        } else {
+//                            //快晴
+//                            drawableId = R.drawable.weather_heavy_sunny;
+//                        }
+//                        mWeatherImage.setImageDrawable(getDrawable(drawableId));
+//                        mKonashiManager.i2cStopCondition();
+//                        return Si1145.readProximity(mKonashiManager);
+//                    }
+//                })
+//                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
+//                    @Override
+//                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
+//                        double value = (double)(result[1] << 8 | result[0]);
+//                        mProximityText.setText(String.valueOf(value));
+//                        mKonashiManager.i2cStopCondition();
+//                        return Si7013.readHumid(mKonashiManager);
+//                    }
+//                })
+        Si7013.<BluetoothGattCharacteristic>readHumid(mKonashiManager)
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        double x = (double)((result[1] << 8 ^ result[0])) / 256.0;
-                        double y = (double)((result[3] << 8 ^ result[2])) / 256.0;
-                        double z = (double)((result[5] << 8 ^ result[4])) / 256.0;
-                        mXText.setText(String.valueOf(x));
-                        mYText.setText(String.valueOf(y));
-                        mZText.setText(String.valueOf(z));
-                        mKonashiManager.i2cStopCondition();
-                        return Si1145.readAmbientLight(mKonashiManager);
-                    }
-                })
-                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
-                    @Override
-                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        double value = (double)(result[1] << 8 | result[0]) / 100.0;
-                        int drawableId;
-                        if(value < 4) {
-                            //曇り
-                            drawableId = R.drawable.weather_cloudy;
-                        } else if(value >= 4 || value < 10) {
-                            //曇り・晴れ
-                            drawableId = R.drawable.weather_sunny_cloud;
-                        } else if(value >= 10 || value < 30) {
-                            //晴れ
-                            drawableId = R.drawable.weather_sunny;
-                        } else {
-                            //快晴
-                            drawableId = R.drawable.weather_heavy_sunny;
-                        }
-                        mWeatherImage.setImageDrawable(getDrawable(drawableId));
-                        mKonashiManager.i2cStopCondition();
-                        return Si1145.readProximity(mKonashiManager);
-                    }
-                })
-                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
-                    @Override
-                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        double value = (double)(result[1] << 8 | result[0]);
-                        mProximityText.setText(String.valueOf(value));
-                        mKonashiManager.i2cStopCondition();
-                        return Si7013.readHumid(mKonashiManager);
-                    }
-                })
-                .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
-                    @Override
-                    public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        double value = (double) (result[0] << 8 | result[1]) * 125.0 / 65536.0 - 6.0;
+                        double value = (double) ((result[1] & 0xff) + (result[0] & 0xff) * 256) * 125.0 / 65536.0 - 6.0;
                         mRh = value;
                         String humidString = String.format("%.1f", value);
                         mHumidText.setText(humidString);
@@ -187,7 +188,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DoneCallback<byte[]>() {
                     @Override
                     public void onDone(byte[] result) {
-                        double value = (double)(result[0] << 8 | result[1]) * 175.72 / 65536.0 - 46.85;
+                        double value = (double)((result[1] & 0xff) + (result[0] & 0xff) * 256) * 175.72 / 65536.0 - 46.85;
                         mTemp = value;
                         double dcValue = 0.81 * mTemp + 0.01 * mRh * (0.99 * mTemp - 14.3) + 46.3;
                         String temperatureString = String.format("%.1f", value);
@@ -255,7 +256,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
             mKonashiManager.i2cMode(Konashi.I2C_ENABLE_100K)
                     .then(Adxl345.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .then(Si1145.<BluetoothGattCharacteristic>initialize(mKonashiManager))
-                    .then(Si7013.<BluetoothGattCharacteristic>initialize(mKonashiManager))
+//                    .then(Si7013.<BluetoothGattCharacteristic>initialize(mKonashiManager))
                     .then(mInitializeDoneCallback)
                     .fail(new FailCallback<BletiaException>() {
                         @Override
