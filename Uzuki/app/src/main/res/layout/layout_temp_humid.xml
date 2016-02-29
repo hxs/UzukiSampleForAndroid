@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="140dp">
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:id="@+id/image_temperature"
+        android:src="@drawable/temperature_red"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="60dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00.0"
+        android:textSize="40sp"
+        android:id="@+id/read_temperature"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/image_temperature"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_temperature"
+        android:textSize="40sp"
+        android:id="@+id/label_temperature"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/image_temperature"
+        android:layout_marginStart="100dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00.0"
+        android:textSize="32sp"
+        android:id="@+id/read_humid"
+        android:layout_alignBottom="@+id/image_temperature"
+        android:layout_toEndOf="@+id/image_temperature"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_humid"
+        android:textSize="32sp"
+        android:id="@+id/label_humid"
+        android:layout_alignBottom="@+id/image_temperature"
+        android:layout_toEndOf="@+id/image_temperature"
+        android:layout_marginStart="80dp"/>
+
+</RelativeLayout>
