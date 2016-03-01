@@ -63,6 +63,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
 
     private Handler mHandler = new Handler();
     private boolean posting;
+    private boolean _disconnect = false;
 
     private double mRh;
     private double mTemp;
@@ -102,7 +103,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
         new Thread(new Runnable() {
             @Override
             public void run() {
-                disconnectKonashi();
+                _disconnect = true;
             }
         }).start();
         super.onDestroy();
@@ -125,6 +126,8 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                         @Override
                         public void onDone(BluetoothGattCharacteristic result) {
                             mKonashiManager.disconnect();
+                            _disconnect = false;
+                            refreshViews();
                         }
                     });
         }
@@ -141,9 +144,9 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                         short yValue = ByteBuffer.wrap(yBytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
                         byte[] zBytes = {result[4], result[5]};
                         short zValue = ByteBuffer.wrap(zBytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
-                        double x = (double)(xValue) / 256.0;
-                        double y = (double)(yValue) / 256.0;
-                        double z = (double)(zValue) / 256.0;
+                        double x = (double) (xValue) / 256.0;
+                        double y = (double) (yValue) / 256.0;
+                        double z = (double) (zValue) / 256.0;
                         String xString = String.format("%.6f", x);
                         String yString = String.format("%.6f", y);
                         String zString = String.format("%.6f", z);
@@ -220,7 +223,8 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .always(new AlwaysCallback<byte[], BletiaException>() {
                     @Override
                     public void onAlways(Promise.State state, byte[] resolved, BletiaException rejected) {
-                        readUzuki();
+                        if (_disconnect) disconnectKonashi();
+                        else readUzuki();
                     }
                 });
     }
@@ -264,7 +268,7 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 mKonashiManager.find(this);
                 break;
             case R.id.btn_disconnect:
-                disconnectKonashi();
+                _disconnect = true;
                 break;
         }
     }
@@ -324,7 +328,8 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    readUzuki();
+                    if (_disconnect) disconnectKonashi();
+                    else readUzuki();
                 }
             });
             posting = true;
