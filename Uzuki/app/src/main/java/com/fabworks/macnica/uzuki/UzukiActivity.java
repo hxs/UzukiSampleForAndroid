@@ -24,6 +24,9 @@ import org.jdeferred.DonePipe;
 import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import info.izumin.android.bletia.BletiaException;
@@ -131,9 +134,15 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        double x = (double)((result[0] & 0xff) + (result[1] & 0xff) * 256) / 256.0;
-                        double y = (double)((result[2] & 0xff) + (result[3] & 0xff) * 256) / 256.0;
-                        double z = (double)((result[4] & 0xff) + (result[5] & 0xff) * 256) / 256.0;
+                        byte[] xBytes = {result[0], result[1]};
+                        short xValue = ByteBuffer.wrap(xBytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+                        byte[] yBytes = {result[2], result[3]};
+                        short yValue = ByteBuffer.wrap(yBytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+                        byte[] zBytes = {result[4], result[5]};
+                        short zValue = ByteBuffer.wrap(zBytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+                        double x = (double)(xValue) / 256.0;
+                        double y = (double)(yValue) / 256.0;
+                        double z = (double)(zValue) / 256.0;
                         String xString = String.format("%.6f", x);
                         String yString = String.format("%.6f", y);
                         String zString = String.format("%.6f", z);
