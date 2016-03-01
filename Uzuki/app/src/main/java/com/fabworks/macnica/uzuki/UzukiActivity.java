@@ -19,10 +19,14 @@ import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiListener;
 import com.uxxu.konashi.lib.KonashiManager;
 
+import org.jdeferred.AlwaysCallback;
 import org.jdeferred.DoneCallback;
 import org.jdeferred.DonePipe;
 import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -131,9 +135,15 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                 .then(new DonePipe<byte[], byte[], BletiaException, Void>() {
                     @Override
                     public Promise<byte[], BletiaException, Void> pipeDone(byte[] result) {
-                        double x = (double)((result[0] & 0xff) + (result[1] & 0xff) * 256) / 256.0;
-                        double y = (double)((result[2] & 0xff) + (result[3] & 0xff) * 256) / 256.0;
-                        double z = (double)((result[4] & 0xff) + (result[5] & 0xff) * 256) / 256.0;
+                        byte[] xBytes = {result[0], result[1]};
+                        short xValue = ByteBuffer.wrap(xBytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+                        byte[] yBytes = {result[2], result[3]};
+                        short yValue = ByteBuffer.wrap(yBytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+                        byte[] zBytes = {result[4], result[5]};
+                        short zValue = ByteBuffer.wrap(zBytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+                        double x = (double)(xValue) / 256.0;
+                        double y = (double)(yValue) / 256.0;
+                        double z = (double)(zValue) / 256.0;
                         String xString = String.format("%.6f", x);
                         String yString = String.format("%.6f", y);
                         String zString = String.format("%.6f", z);
@@ -205,6 +215,12 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public void onFail(BletiaException result) {
                         Toast.makeText(self, result.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .always(new AlwaysCallback<byte[], BletiaException>() {
+                    @Override
+                    public void onAlways(Promise.State state, byte[] resolved, BletiaException rejected) {
+                        readUzuki();
                     }
                 });
     }
@@ -305,13 +321,12 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
     DoneCallback<BluetoothGattCharacteristic> mInitializeDoneCallback = new DoneCallback<BluetoothGattCharacteristic>() {
         @Override
         public void onDone(BluetoothGattCharacteristic result) {
-            mHandler.postDelayed(new Runnable() {
+            mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     readUzuki();
-                    mHandler.postDelayed(this, 1000);
                 }
-            }, 1000);
+            });
             posting = true;
         }
     };
