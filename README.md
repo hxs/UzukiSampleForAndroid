@@ -3,11 +3,9 @@ UzukiSensorShield サンプルコードは、Konashi2.0のアップデートに�
 このサンプルコードで、以下の３つのセンサのデータを取得、表示します。
 
 ## ソースの取得・ビルド方法
-```
-git clone https://github.com/mpression/UzukiSampleForAndroid
-# AndroidStudioで OpenAnExistingAndroidStudioProjectから、UzukiSampleForAndroid/Uzuki フォルダを選択
-# Androidデバイスを接続、AndroidStudioのRunボタンから実行
-```
+1. `git clone https://github.com/mpression/UzukiSampleForAndroid`
+2. `AndroidStudio`で `Open An Existing Android Studio Project`から、`UzukiSampleForAndroid/Uzuki`フォルダを選択
+3. Androidデバイスを接続、`AndroidStudio`の`Run`ボタンから実行
 
 ## Si1145近接センサのメソッドを追加しました。
 
