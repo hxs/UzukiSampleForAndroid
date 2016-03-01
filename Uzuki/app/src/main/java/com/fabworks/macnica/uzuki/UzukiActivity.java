@@ -19,6 +19,7 @@ import com.uxxu.konashi.lib.Konashi;
 import com.uxxu.konashi.lib.KonashiListener;
 import com.uxxu.konashi.lib.KonashiManager;
 
+import org.jdeferred.AlwaysCallback;
 import org.jdeferred.DoneCallback;
 import org.jdeferred.DonePipe;
 import org.jdeferred.FailCallback;
@@ -215,6 +216,12 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
                     public void onFail(BletiaException result) {
                         Toast.makeText(self, result.toString(), Toast.LENGTH_SHORT).show();
                     }
+                })
+                .always(new AlwaysCallback<byte[], BletiaException>() {
+                    @Override
+                    public void onAlways(Promise.State state, byte[] resolved, BletiaException rejected) {
+                        readUzuki();
+                    }
                 });
     }
 
@@ -314,13 +321,12 @@ public class UzukiActivity extends AppCompatActivity implements View.OnClickList
     DoneCallback<BluetoothGattCharacteristic> mInitializeDoneCallback = new DoneCallback<BluetoothGattCharacteristic>() {
         @Override
         public void onDone(BluetoothGattCharacteristic result) {
-            mHandler.postDelayed(new Runnable() {
+            mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     readUzuki();
-                    mHandler.postDelayed(this, 1000);
                 }
-            }, 1000);
+            });
             posting = true;
         }
     };
