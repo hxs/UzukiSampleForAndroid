@@ -4,8 +4,8 @@ UzukiSensorShield サンプルコードは、Konashi2.0のアップデートに�
 
 ## ソースの取得・ビルド方法
 1. `git clone https://github.com/mpression/UzukiSampleForAndroid`
-2. `AndroidStudio`で `Open An Existing Android Studio Project`から、`UzukiSampleForAndroid/Uzuki`フォルダを選択
-3. Androidデバイスを接続、`AndroidStudio`の`Run`ボタンから実行
+2. Android Studio で `Open An Existing Android Studio Project`から、`UzukiSampleForAndroid/Uzuki`フォルダを選択
+3. Androidデバイスを接続、 Android Studio の`Run`ボタンから実行
 
 ## Si1145近接センサのメソッドを追加しました。
 
